@@ -1,8 +1,29 @@
+# Dependencies
 node_modules/
+
+# Build output
 dist/
+coverage/
+
+# Environment (keep the template)
 .env
-.env.local
+.env.*
+!.env.example
+
+# Firebase CLI cache and emulator logs/exports
 .firebase/
-firebase-debug.log
-firestore-debug.log
-ui-debug.log
+*-debug.log
+emulator-data/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editors and OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Local agent scratch space
+.superpowers/

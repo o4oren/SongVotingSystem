@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function myEmail() {
+      return request.auth.token.email.lower();
+    }
+
+    function isMember() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/members/$(myEmail()));
+    }
+
+    function isAdmin() {
+      return isMember()
+        && get(/databases/$(database)/documents/members/$(myEmail())).data.admin == true;
+    }
+
+    match /members/{email} {
+      allow read: if isMember();
+      allow write: if isAdmin();
+    }
+
+    match /polls/{pollId} {
+      allow read: if isMember();
+      allow write: if isAdmin();
+
+      match /songs/{songId} {
+        allow read: if isMember();
+        allow write: if isAdmin();
+      }
+
+      // The 0–100 / sums-to-100 check is client-side only: rules can't iterate map values.
+      match /votes/{email} {
+        allow read: if isMember();
+        allow create, update: if isMember()
+          && email == myEmail()
+          && request.resource.data.points is map;
+        allow delete: if isMember() && (email == myEmail() || isAdmin());
+      }
+    }
+  }
+}

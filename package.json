@@ -13,7 +13,9 @@
     "deploy": "npm run build && firebase deploy --only hosting,firestore:rules"
   },
   "overrides": {
-    "protobufjs@^7": "7.5.5"
+    "protobufjs@^7": "7.5.5",
+    "@firebase/app": "0.16.2",
+    "@firebase/app-compat": "0.5.18"
   },
   "dependencies": {
     "firebase": "^12.19.0",

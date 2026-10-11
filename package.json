@@ -1,0 +1,37 @@
+{
+  "name": "song-voting-system",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-songvote \"vitest run --config vitest.rules.config.js\"",
+    "deploy": "npm run build && firebase deploy --only hosting,firestore:rules"
+  },
+  "overrides": {
+    "protobufjs@^7": "7.5.5",
+    "@firebase/app": "0.16.2",
+    "@firebase/app-compat": "0.5.18"
+  },
+  "dependencies": {
+    "firebase": "^12.19.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@vitejs/plugin-react": "^6.1.2",
+    "firebase-tools": "^15.33.0",
+    "jsdom": "^30.1.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

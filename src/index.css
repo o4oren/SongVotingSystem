@@ -1,0 +1,45 @@
+:root {
+  --bg: #fafafa;
+  --fg: #1d1d1f;
+  --muted: #6b6b70;
+  --line: #dcdce0;
+  --accent: #2f6fde;
+  --danger: #c4314b;
+  --ok: #1f8a4c;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #161618; --fg: #f2f2f4; --muted: #a0a0a8; --line: #34343a; --accent: #6c9cff; --danger: #ff6b81; --ok: #4cc785; }
+}
+body { margin: 0; background: var(--bg); }
+main, .center { max-width: 720px; margin: 0 auto; padding: 16px; }
+.center { text-align: center; padding-top: 15vh; }
+.app-header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.app-header nav { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.brand { font-weight: 700; color: var(--fg); text-decoration: none; }
+a { color: var(--accent); }
+button { font: inherit; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; }
+button[type='submit'] { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+button.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+input { font: inherit; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--fg); }
+input[aria-invalid='true'] { border-color: var(--danger); }
+.inline-form { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.list { list-style: none; padding: 0; }
+.list li, .ranking li { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.ranking { padding-left: 20px; }
+.ranking li { display: list-item; }
+.ranking-head { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.total { font-weight: 700; margin-left: auto; }
+.breakdown { margin: 4px 0 0; font-size: 0.9em; }
+.ballot { margin-top: 24px; }
+.ballot-row { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 6px 0; }
+.ballot-row input { width: 5em; }
+.points-left { font-weight: 700; }
+.muted { color: var(--muted); }
+.hint { color: var(--muted); margin: 4px 0; }
+.error { color: var(--danger); }
+.ok { color: var(--ok); }
+.status { color: var(--muted); text-align: center; padding: 32px; }

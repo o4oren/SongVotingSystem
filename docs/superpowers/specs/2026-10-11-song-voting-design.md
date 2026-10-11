@@ -97,7 +97,7 @@ Helper functions:
 | `members/{email}` | member | admin |
 | `polls/{pollId}` | member | admin |
 | `polls/{pollId}/songs/{songId}` | member | admin |
-| `polls/{pollId}/votes/{email}` | member | member whose lowercased auth email equals `{email}`; on create/update, `points` must be a map |
+| `polls/{pollId}/votes/{email}` | member | create/update: member whose lowercased auth email equals `{email}`, and `points` must be a map. Delete: that member, or an admin (needed for poll deletion) |
 
 Default: deny everything else.
 

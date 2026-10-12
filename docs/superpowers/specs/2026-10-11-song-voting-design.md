@@ -3,6 +3,8 @@
 Date: 2026-10-11
 Status: Approved in conversation; awaiting written-spec review
 
+> Partly superseded by `2026-10-12-bidding-polls-design.md` (bids, budgets, closing, sealed polls, styling).
+
 ## Purpose
 
 A cover band needs to decide which songs to play. Each poll contains a list of

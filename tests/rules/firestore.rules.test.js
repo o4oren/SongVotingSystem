@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import {
   Timestamp,
+  setLogLevel,
   collection,
   deleteDoc,
   doc,
@@ -12,6 +13,8 @@ import {
   updateDoc,
   writeBatch,
 } from 'firebase/firestore';
+
+setLogLevel('error');
 
 const ADMIN = 'admin@gmail.com';
 const MEMBER = 'member@gmail.com';
@@ -225,6 +228,10 @@ describe('the hasBids flag', () => {
     await assertFails(updateDoc(doc(as(MEMBER), 'polls', 'open'), { hasBids: false }));
   });
 
+  it('is required for a member to create a first bid', async () => {
+    await assertFails(setDoc(doc(as(MEMBER), 'polls/fresh/bids', MEMBER), BID));
+  });
+
   it('lets an admin bid in the same batch as the flag', async () => {
     const db = as(ADMIN);
     const batch = writeBatch(db);
@@ -255,6 +262,20 @@ describe('admins', () => {
     await assertFails(setDoc(doc(db, 'polls', 'p2'), validPoll({ sealed: 'no' })));
     await assertFails(setDoc(doc(db, 'polls', 'p2'), { title: 'No sealed', budget: 100 }));
     await assertFails(setDoc(doc(db, 'polls', 'p2'), validPoll({ hasBids: true })));
+  });
+
+  it('cannot update polls to invalid settings', async () => {
+    const db = as(ADMIN);
+    await assertFails(updateDoc(doc(db, 'polls', 'fresh'), { budget: 0 }));
+    await assertFails(updateDoc(doc(db, 'polls', 'fresh'), { budget: '150' }));
+    await assertFails(updateDoc(doc(db, 'polls', 'fresh'), { sealed: 'yes' }));
+    await assertFails(updateDoc(doc(db, 'polls', 'fresh'), { endsAt: 'tomorrow' }));
+  });
+
+  it('cannot create polls with a bad closed or endsAt', async () => {
+    const db = as(ADMIN);
+    await assertFails(setDoc(doc(db, 'polls', 'p2'), validPoll({ closed: 'no' })));
+    await assertFails(setDoc(doc(db, 'polls', 'p2'), validPoll({ endsAt: 5 })));
   });
 
   it('can delete polls', async () => {

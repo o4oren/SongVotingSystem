@@ -22,6 +22,16 @@ service cloud.firestore {
         && (poll.get('endsAt', null) == null || request.time < poll.endsAt);
     }
 
+    function validSettings() {
+      let d = request.resource.data;
+      return d.get('budget', 100) is int
+        && d.get('budget', 100) >= 1
+        && d.get('budget', 100) <= 1000
+        && d.get('sealed', false) is bool
+        && d.get('closed', false) is bool
+        && (d.get('endsAt', null) == null || d.get('endsAt', null) is timestamp);
+    }
+
     match /members/{email} {
       allow read: if isMember();
       allow write: if isAdmin();
@@ -35,6 +45,7 @@ service cloud.firestore {
       allow read: if isMember();
 
       allow create: if isAdmin()
+        && validSettings()
         && request.resource.data.budget is int
         && request.resource.data.budget >= 1
         && request.resource.data.budget <= 1000
@@ -44,6 +55,7 @@ service cloud.firestore {
       // Admins can change anything except budget and visibility once bids exist, and can't
       // unset hasBids. Members can only flip hasBids to true, with their first bid.
       allow update: if (isAdmin()
+          && validSettings()
           && !(resource.data.get('hasBids', false) && !request.resource.data.get('hasBids', false))
           && (!resource.data.get('hasBids', false)
             || (request.resource.data.get('budget', 100) == resource.data.get('budget', 100)
@@ -67,7 +79,8 @@ service cloud.firestore {
         allow create, update: if isMember()
           && email == myEmail()
           && request.resource.data.points is map
-          && isOpen(pollData());
+          && isOpen(pollData())
+          && getAfter(/databases/$(database)/documents/polls/$(pollId)).data.get('hasBids', false) == true;
         allow delete: if isAdmin()
           || (isMember() && email == myEmail() && isOpen(pollData()));
       }

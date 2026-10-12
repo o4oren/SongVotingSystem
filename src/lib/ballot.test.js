@@ -74,6 +74,11 @@ describe('validateBallot', () => {
     expect(result.errors).toEqual(['110 points unassigned — your bid must total exactly 150.']);
   });
 
+  it('says "1 point" in the singular', () => {
+    expect(validateBallot({ a: '99' }, SONGS, 100).errors).toEqual(['1 point unassigned — your bid must total exactly 100.']);
+    expect(validateBallot({ a: '100', b: '1' }, SONGS, 100).errors).toEqual(['You are 1 point over 100.']);
+  });
+
   it('reports the overage against the budget', () => {
     const result = validateBallot({ a: '140', b: '20' }, SONGS, 150);
     expect(result.valid).toBe(false);

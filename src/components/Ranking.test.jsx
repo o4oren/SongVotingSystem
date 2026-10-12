@@ -11,28 +11,20 @@ const ROWS = [
 ];
 
 describe('Ranking', () => {
-  it('shows totals, breakdowns and bars scaled to the leader', () => {
+  it('shows totals and breakdowns without score bars', () => {
     const { container } = render(<Ranking rows={ROWS} canRemove={false} onRemoveSong={vi.fn()} />);
     const items = within(screen.getByRole('list')).getAllByRole('listitem');
     expect(items[0]).toHaveTextContent('80 pts');
     expect(items[0]).toHaveTextContent('a@gmail.com 80');
-    const bars = container.querySelectorAll('.score-bar > span');
-    expect(bars[0]).toHaveStyle({ width: '100%' });
-    expect(bars[1]).toHaveStyle({ width: '25%' });
-  });
-
-  it('draws empty bars when nobody has bid', () => {
-    const rows = ROWS.map((row) => ({ ...row, total: 0, breakdown: [] }));
-    const { container } = render(<Ranking rows={rows} canRemove={false} onRemoveSong={vi.fn()} />);
-    expect(container.querySelector('.score-bar > span')).toHaveStyle({ width: '0%' });
+    expect(items[1]).toHaveTextContent('20 pts');
+    expect(container.querySelector('.score-bar')).toBeNull();
   });
 
   it('can list songs without scores', () => {
-    const { container } = render(<Ranking rows={ROWS} showScores={false} canRemove={false} onRemoveSong={vi.fn()} />);
+    render(<Ranking rows={ROWS} showScores={false} canRemove={false} onRemoveSong={vi.fn()} />);
     expect(screen.getByText('Africa')).toBeInTheDocument();
     expect(screen.queryByText(/pts/)).not.toBeInTheDocument();
     expect(screen.queryByText(/a@gmail.com/)).not.toBeInTheDocument();
-    expect(container.querySelector('.score-bar')).toBeNull();
   });
 
   it('shows Remove buttons only when allowed', async () => {

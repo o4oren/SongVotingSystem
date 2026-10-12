@@ -50,7 +50,7 @@ export default function PollPage({ me }) {
       <p>
         <Link to="/">← All polls</Link>
       </p>
-      <h1 className="poll-title gradient-text">{poll.title}</h1>
+      <h1 className="poll-title">{poll.title}</h1>
       <div className="poll-meta">
         <PollStatus poll={poll} now={now} />
         <span className="muted">Budget: {settings.budget} pts</span>

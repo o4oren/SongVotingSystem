@@ -12,6 +12,9 @@ async function clear() {
 }
 
 beforeAll(() => {
+  if (!process.env.FIRESTORE_EMULATOR_HOST) {
+    throw new Error('FIRESTORE_EMULATOR_HOST is not set: this suite deletes every poll, so run it via `npm run test:rules` (Firestore emulator) only.');
+  }
   app = initializeApp({ projectId: 'demo-songvote' }, 'migration-test');
   db = getFirestore(app);
 });

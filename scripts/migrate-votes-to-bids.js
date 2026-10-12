@@ -3,7 +3,8 @@
 //
 //   GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json npm run migrate:bids -- --dry-run
 //   GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json npm run migrate:bids
-import { pathToFileURL } from 'node:url';
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { applicationDefault, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
@@ -35,7 +36,7 @@ export async function migrateVotesToBids(db, { dryRun = false } = {}) {
   return counts;
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
   const dryRun = process.argv.includes('--dry-run');
   const app = initializeApp({ credential: applicationDefault() });
   const counts = await migrateVotesToBids(getFirestore(app), { dryRun });

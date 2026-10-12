@@ -10,58 +10,63 @@ const titles = (rows) => rows.map((row) => row.song.title);
 
 describe('computeRanking', () => {
   it('sorts songs by total points, highest first', () => {
-    const votes = [
+    const bids = [
       { email: 'a@gmail.com', points: { s1: 70, s2: 30 } },
       { email: 'b@gmail.com', points: { s2: 50, s3: 50 } },
     ];
-    const rows = computeRanking(SONGS, votes);
+    const rows = computeRanking(SONGS, bids, 100);
     expect(titles(rows)).toEqual(['Africa', 'Zombie', 'Creep']);
     expect(rows.map((row) => row.total)).toEqual([80, 70, 50]);
   });
 
-  it('lists who gave what, highest first', () => {
-    const votes = [
+  it('lists who bid what, highest first', () => {
+    const bids = [
       { email: 'a@gmail.com', points: { s2: 30, s1: 70 } },
       { email: 'b@gmail.com', points: { s2: 50, s3: 50 } },
     ];
-    const africa = computeRanking(SONGS, votes).find((row) => row.song.id === 's2');
+    const africa = computeRanking(SONGS, bids, 100).find((row) => row.song.id === 's2');
     expect(africa.breakdown).toEqual([
       { email: 'b@gmail.com', points: 50 },
       { email: 'a@gmail.com', points: 30 },
     ]);
   });
 
+  it('counts values up to a custom budget', () => {
+    const rows = computeRanking(SONGS, [{ email: 'a@gmail.com', points: { s1: 150 } }], 150);
+    expect(rows[0].total).toBe(150);
+  });
+
   it('breaks ties alphabetically, ignoring case', () => {
     const songs = [{ id: 'x', title: 'beatles medley' }, { id: 'y', title: 'Abba medley' }, ZOMBIE];
-    const rows = computeRanking(songs, [{ email: 'a@gmail.com', points: { x: 50, y: 50 } }]);
+    const rows = computeRanking(songs, [{ email: 'a@gmail.com', points: { x: 50, y: 50 } }], 100);
     expect(titles(rows)).toEqual(['Abba medley', 'beatles medley', 'Zombie']);
   });
 
-  it('lists every song at 0 when nobody has voted', () => {
-    const rows = computeRanking(SONGS, []);
+  it('lists every song at 0 when nobody has bid', () => {
+    const rows = computeRanking(SONGS, [], 100);
     expect(titles(rows)).toEqual(['Africa', 'Creep', 'Zombie']);
     expect(rows.every((row) => row.total === 0 && row.breakdown.length === 0)).toBe(true);
   });
 
   it('ignores points for songs that were removed', () => {
-    const rows = computeRanking([ZOMBIE], [{ email: 'a@gmail.com', points: { s1: 60, gone: 40 } }]);
+    const rows = computeRanking([ZOMBIE], [{ email: 'a@gmail.com', points: { s1: 60, gone: 40 } }], 100);
     expect(rows).toHaveLength(1);
     expect(rows[0].total).toBe(60);
   });
 
-  it('ignores malformed values instead of crashing or concatenating', () => {
-    const votes = [
+  it('ignores malformed and over-budget values instead of crashing or concatenating', () => {
+    const bids = [
       { email: 'a@gmail.com', points: { s1: '50', s2: -20, s3: NaN } },
       { email: 'b@gmail.com', points: { s1: 10, s2: 500, s3: 2.5 } },
       { email: 'c@gmail.com' },
     ];
-    const rows = computeRanking(SONGS, votes);
+    const rows = computeRanking(SONGS, bids, 100);
     expect(rows.find((row) => row.song.id === 's1').total).toBe(10);
     expect(rows.find((row) => row.song.id === 's2').total).toBe(0);
     expect(rows.find((row) => row.song.id === 's3').total).toBe(0);
   });
 
   it('returns an empty list for a poll with no songs', () => {
-    expect(computeRanking([], [{ email: 'a@gmail.com', points: { s1: 100 } }])).toEqual([]);
+    expect(computeRanking([], [{ email: 'a@gmail.com', points: { s1: 100 } }], 100)).toEqual([]);
   });
 });

@@ -30,3 +30,7 @@ npm-debug.log*
 
 # Local song list used to seed polls
 songs.txt
+
+# Service-account keys for one-off admin scripts (never commit)
+*service-account*.json
+*-firebase-adminsdk-*.json

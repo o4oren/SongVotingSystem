@@ -1,8 +1,6 @@
 export default function Ranking({ rows, showScores = true, canRemove, onRemoveSong }) {
   if (rows.length === 0) return <p>No songs in this poll yet.</p>;
 
-  const leader = rows[0].total;
-
   return (
     <ol className="ranking">
       {rows.map(({ song, total, breakdown }) => (
@@ -24,11 +22,6 @@ export default function Ranking({ rows, showScores = true, canRemove, onRemoveSo
               </button>
             )}
           </div>
-          {showScores && (
-            <div className="score-bar" aria-hidden="true">
-              <span style={{ width: `${leader > 0 ? Math.round((total / leader) * 100) : 0}%` }} />
-            </div>
-          )}
           {showScores && breakdown.length > 0 && (
             <p className="breakdown muted">
               {breakdown.map((entry) => `${entry.email} ${entry.points}`).join(' · ')}

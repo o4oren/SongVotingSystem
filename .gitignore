@@ -27,3 +27,6 @@ npm-debug.log*
 
 # Local agent scratch space
 .superpowers/
+
+# Local song list used to seed polls
+songs.txt

@@ -19,7 +19,7 @@ export default function SignIn() {
 
   return (
     <section className="center">
-      <h1>Band Song Vote</h1>
+      <h1 className="gradient-text">Band Song Bids</h1>
       <p>Sign in with the Google account your band admin added.</p>
       <button type="button" onClick={handleClick}>Sign in with Google</button>
       {error && <p role="alert" className="error">{error}</p>}

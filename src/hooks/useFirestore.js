@@ -23,8 +23,10 @@ function useSnapshot(key, emptyValue, subscribe) {
   return { data: state.data, loading: false, error: state.error };
 }
 
-export function useCollection(segments, order) {
-  const key = segments ? `${segments.join('/')}|${order ? `${order.field}:${order.direction}` : ''}` : null;
+// `attempt` is an optional cache-buster: changing it re-subscribes and clears a stuck error.
+export function useCollection(segments, order, attempt) {
+  const orderKey = order ? `${order.field}:${order.direction}` : '';
+  const key = segments ? `${segments.join('/')}|${orderKey}${attempt ? `|${attempt}` : ''}` : null;
   return useSnapshot(key, NO_DOCS, (onData, onError) => {
     const ref = collection(db, ...segments);
     const source = order ? query(ref, orderBy(order.field, order.direction)) : ref;

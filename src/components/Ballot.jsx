@@ -8,13 +8,18 @@ function initialDraft(songs, savedPoints) {
   );
 }
 
-export default function Ballot({ songs, savedPoints, onSave }) {
+// Members can always write their own bid on an open poll, so a rejection means it just closed.
+function saveError(err) {
+  return err?.code === 'permission-denied' ? 'Bidding closed for this poll.' : `Could not save: ${errorMessage(err)}`;
+}
+
+export default function Ballot({ songs, budget, savedPoints, readOnly = false, onSave }) {
   const [draft, setDraft] = useState(() => initialDraft(songs, savedPoints));
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
 
   const songIds = songs.map((song) => song.id);
-  const result = validateBallot(draft, songIds);
+  const result = validateBallot(draft, songIds, budget);
   const invalid = new Set(result.invalidSongIds);
 
   function handleChange(songId, value) {
@@ -24,21 +29,21 @@ export default function Ballot({ songs, savedPoints, onSave }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (!result.valid) return;
+    if (readOnly || !result.valid) return;
     setSaving(true);
     try {
-      await onSave(cleanPoints(draft, songIds));
-      setStatus({ ok: true, text: 'Saved.' });
+      await onSave(cleanPoints(draft, songIds, budget));
+      setStatus({ ok: true, text: 'Bid saved.' });
     } catch (err) {
-      setStatus({ ok: false, text: `Could not save: ${errorMessage(err)}` });
+      setStatus({ ok: false, text: saveError(err) });
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <form className="ballot" onSubmit={handleSubmit}>
-      <h2>My ballot</h2>
+    <form className="ballot panel" onSubmit={handleSubmit}>
+      <h2>My bid</h2>
       {songs.map((song) => (
         <label key={song.id} className="ballot-row">
           <span>
@@ -48,23 +53,32 @@ export default function Ballot({ songs, savedPoints, onSave }) {
           <input
             type="number"
             min="0"
-            max="100"
+            max={budget}
             step="1"
             inputMode="numeric"
             aria-label={`Points for ${song.title}`}
-            aria-invalid={invalid.has(song.id)}
+            aria-invalid={!readOnly && invalid.has(song.id)}
+            disabled={readOnly}
             value={draft[song.id] ?? ''}
             onChange={(event) => handleChange(song.id, event.target.value)}
           />
         </label>
       ))}
-      <p className="points-left">Points left: {result.remaining}</p>
-      {result.errors.map((text) => (
-        <p key={text} className="hint">{text}</p>
-      ))}
-      <button type="submit" disabled={!result.valid || saving}>
-        {saving ? 'Saving…' : 'Save'}
-      </button>
+      {readOnly ? (
+        <p className="hint">Bidding is closed.</p>
+      ) : (
+        <>
+          <p className="points-left">
+            Budget left: {result.remaining} / {budget}
+          </p>
+          {result.errors.map((text) => (
+            <p key={text} className="hint">{text}</p>
+          ))}
+          <button type="submit" disabled={!result.valid || saving}>
+            {saving ? 'Saving…' : savedPoints ? 'Update bid' : 'Place bid'}
+          </button>
+        </>
+      )}
       {status && (
         <p role={status.ok ? 'status' : 'alert'} className={status.ok ? 'ok' : 'error'}>
           {status.text}

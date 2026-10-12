@@ -16,27 +16,78 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/members/$(myEmail())).data.admin == true;
     }
 
+    // Missing fields mean defaults, so polls created before these settings still work.
+    function isOpen(poll) {
+      return !poll.get('closed', false)
+        && (poll.get('endsAt', null) == null || request.time < poll.endsAt);
+    }
+
+    function validSettings() {
+      let d = request.resource.data;
+      return d.get('budget', 100) is int
+        && d.get('budget', 100) >= 1
+        && d.get('budget', 100) <= 1000
+        && d.get('sealed', false) is bool
+        && d.get('closed', false) is bool
+        && (d.get('endsAt', null) == null || d.get('endsAt', null) is timestamp);
+    }
+
     match /members/{email} {
       allow read: if isMember();
       allow write: if isAdmin();
     }
 
     match /polls/{pollId} {
+      function pollData() {
+        return get(/databases/$(database)/documents/polls/$(pollId)).data;
+      }
+
       allow read: if isMember();
-      allow write: if isAdmin();
+
+      allow create: if isAdmin()
+        && validSettings()
+        && request.resource.data.budget is int
+        && request.resource.data.budget >= 1
+        && request.resource.data.budget <= 1000
+        && request.resource.data.sealed is bool
+        && request.resource.data.get('hasBids', false) == false;
+
+      // Admins can change anything except budget and visibility once bids exist, and can't
+      // unset hasBids. Members can only flip hasBids to true, with their first bid.
+      allow update: if (isAdmin()
+          && validSettings()
+          && !(resource.data.get('hasBids', false) && !request.resource.data.get('hasBids', false))
+          && (!resource.data.get('hasBids', false)
+            || (request.resource.data.get('budget', 100) == resource.data.get('budget', 100)
+              && request.resource.data.get('sealed', false) == resource.data.get('sealed', false))))
+        || (isMember()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hasBids'])
+          && request.resource.data.hasBids == true
+          && isOpen(resource.data));
+
+      allow delete: if isAdmin();
 
       match /songs/{songId} {
         allow read: if isMember();
         allow write: if isAdmin();
       }
 
-      // The 0–100 / sums-to-100 check is client-side only: rules can't iterate map values.
-      match /votes/{email} {
-        allow read: if isMember();
+      // The exact-budget check is client-side only: rules can't sum map values.
+      match /bids/{email} {
+        allow read: if isMember()
+          && (email == myEmail() || !pollData().get('sealed', false) || !isOpen(pollData()));
         allow create, update: if isMember()
           && email == myEmail()
-          && request.resource.data.points is map;
-        allow delete: if isMember() && (email == myEmail() || isAdmin());
+          && request.resource.data.points is map
+          && isOpen(pollData())
+          && getAfter(/databases/$(database)/documents/polls/$(pollId)).data.get('hasBids', false) == true;
+        allow delete: if isAdmin()
+          || (isMember() && email == myEmail() && isOpen(pollData()));
+      }
+
+      // Pre-rename data, kept until a later cleanup removes it.
+      match /votes/{email} {
+        allow read, delete: if isAdmin();
       }
     }
   }

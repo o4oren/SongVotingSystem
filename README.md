@@ -168,7 +168,7 @@ The old `votes` documents are left in place. Only admins can read them. Deleting
 | "You don't have access." errors | Make sure the rules were deployed (`npm run deploy`), and that you're signed in with a whitelisted account. |
 | "Bidding closed for this poll." when saving | The poll closed (by an admin or its end date) while you were editing. Your last saved bid still counts. |
 | Old polls show no bids after upgrading | Run the migration in section 8. |
-| "Tallying final results…" stays for more than a few seconds | Your device clock is probably ahead. Reload the page; check the device's date and time settings. |
+| "Tallying final results…" keeps showing after a sealed poll closes | Your device clock is probably ahead of the server's. The app keeps retrying; fixing the device's date and time settings (or reloading) clears it. |
 | A blank page, or Firebase "invalid-api-key" errors locally | `.env` is missing or incomplete. Compare it with step 3.4, then restart `npm run dev`. |
 | `test:rules` fails with "firebase-tools no longer supports Java version before 21" | Point `JAVA_HOME` at a JDK 21+ (see Prerequisites). |
 | `npm install` fails with `ETARGET` for `@protobufjs/...` | See "Pinned packages" below. |

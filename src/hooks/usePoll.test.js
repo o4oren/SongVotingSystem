@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
 
 vi.mock('./useFirestore.js', () => ({ useCollection: vi.fn(), useDocument: vi.fn() }));
 
@@ -35,6 +35,10 @@ const ownBidArgs = () => useDocument.mock.calls.map(([segments]) => segments).fi
 
 beforeEach(() => {
   vi.clearAllMocks();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('usePoll', () => {
@@ -108,5 +112,51 @@ describe('usePoll', () => {
     const { result } = renderHook(() => usePoll('p1', ME, NOW));
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toEqual({ code: 'permission-denied' });
+  });
+
+  describe('permission-denied on the bids collection', () => {
+    const denyBids = () =>
+      useCollection.mockImplementation((segments) => {
+        if (segments === null) return idle([]);
+        if (segments[2] === 'songs') return ready(SONGS);
+        return { data: [], loading: false, error: { code: 'permission-denied' } };
+      });
+
+    it('recovers on a sealed closed poll: hides the error, shows own bid, retries later', () => {
+      vi.useFakeTimers();
+      setup({ id: 'p1', title: 'Summer set', sealed: true, closed: true });
+      denyBids();
+      const { result } = renderHook(() => usePoll('p1', ME, NOW));
+      expect(result.current.error).toBeNull();
+      expect(result.current.bidsVisible).toBe(false);
+      expect(ownBidArgs()).toContainEqual(['polls', 'p1', 'bids', ME]);
+      expect(result.current.myBid).toEqual({ email: ME, points: { s1: 100 } });
+
+      useCollection.mockClear();
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+      const retried = useCollection.mock.calls.filter(([segments]) => segments?.[2] === 'bids');
+      expect(retried.length).toBeGreaterThan(0);
+      expect(retried.every(([, , attempt]) => attempt === 1)).toBe(true);
+    });
+
+    it('clears the retry timer on unmount', () => {
+      vi.useFakeTimers();
+      setup({ id: 'p1', title: 'Summer set', sealed: true, closed: true });
+      denyBids();
+      const { unmount } = renderHook(() => usePoll('p1', ME, NOW));
+      expect(vi.getTimerCount()).toBe(1);
+      unmount();
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('still surfaces the error on a poll that is not sealed', () => {
+      setup({ id: 'p1', title: 'Summer set' });
+      denyBids();
+      const { result } = renderHook(() => usePoll('p1', ME, NOW));
+      expect(result.current.error).toEqual({ code: 'permission-denied' });
+      expect(result.current.bidsVisible).toBe(true);
+    });
   });
 });

@@ -4,7 +4,7 @@ import { signOutUser } from '../hooks/useAuth.js';
 export default function Header({ me }) {
   return (
     <header className="app-header">
-      <Link to="/" className="brand">Band Song Vote</Link>
+      <Link to="/" className="brand gradient-text">Band Song Bids</Link>
       <nav>
         {me.isAdmin && <NavLink to="/members">Members</NavLink>}
         <span className="muted">{me.email}</span>

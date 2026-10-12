@@ -8,6 +8,8 @@
   --primary-soft: #efeaff;
   --primary-ink: #5236d6;
   --spark: #ff6a3d;
+  --spark-ink: #b8441c;
+  --on-primary: #ffffff;
   --open-bg: #e8fbef;
   --open-fg: #1d8a4a;
   --closed-bg: #eceef3;
@@ -32,6 +34,8 @@
     --primary-soft: #2a2552;
     --primary-ink: #c8bbff;
     --spark: #ff8a63;
+  --spark-ink: #ffa47f;
+  --on-primary: #12142a;
     --open-bg: #143524;
     --open-fg: #5fdc93;
     --closed-bg: #262a45;
@@ -51,10 +55,16 @@ h2 { font-size: 1.15rem; margin: 24px 0 8px; }
 a { color: var(--primary); }
 
 .gradient-text {
-  background: linear-gradient(90deg, var(--primary), var(--spark));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  display: inline-block;
+  color: var(--primary);
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .gradient-text {
+    background: linear-gradient(90deg, var(--primary), var(--spark));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 }
 
 /* Header */
@@ -65,7 +75,7 @@ a { color: var(--primary); }
 /* Controls */
 button { font: inherit; padding: 7px 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
 button:hover:not(:disabled) { border-color: var(--primary); }
-button[type='submit'] { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+button[type='submit'] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); font-weight: 600; }
 button.secondary { background: var(--primary-soft); border-color: transparent; color: var(--primary-ink); font-weight: 600; }
 button.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -77,7 +87,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 legend { padding: 0; margin-bottom: 4px; }
 
 /* Panels and forms */
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 16px 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin: 16px 0; }
 .panel h2 { margin-top: 0; }
 .inline-form { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
 .create-poll-form, .settings-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
@@ -115,7 +125,7 @@ legend { padding: 0; margin-bottom: 4px; }
 /* Ballot */
 .ballot-row { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 6px 0; }
 .ballot-row input { width: 5em; }
-.points-left { font-weight: 700; color: var(--spark); }
+.points-left { font-weight: 700; color: var(--spark-ink); }
 
 /* Text */
 .muted { color: var(--muted); }
